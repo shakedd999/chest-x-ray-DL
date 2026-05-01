@@ -12,6 +12,10 @@ To perform inference, use the fine-tuned model saved during the final training s
 *   **Model Unique Identifier In Drive (for downloading the model)**: `10npEK72N-EzjP18bDngLy3MVyn6qVSgk`
 *   **Expected Input Shape**: 224x224x3 (RGB)
 
+Use the next class weights for the loss function: {'Infiltration': 1.9546059, 'Effusion': 2.7234676, 'Atelectasis': 2.9298463}
+
+Use the next thresholds in order to know whether the image contains a chest disease: {'Infiltration': 0.29, 'Effusion': 0.44, 'Atelectasis': 0.34}
+
 ---
 
 ## Training & Dataset Details
@@ -84,8 +88,12 @@ if not os.path.exists(model_filename):
     gdown.download(url, model_filename, quiet=False)
 
 # 2. Load the trained model from the downloaded file
-# This model includes the architecture and best weights from fine-tuning
-model = tf.keras.models.load_model(model_filename)
+pos_weights_tf = tf.constant([1.9546059, 2.7234676, 2.9298463], dtype=tf.float32) # The class weights for the loss function
+def weighted_bce(y_true, y_pred):
+    y_pred = tf.clip_by_value(y_pred, 1e-7, 1.0 - 1e-7)
+    loss = -(pos_weights_tf * y_true * tf.math.log(y_pred) + (1.0 - y_true) * tf.math.log(1.0 - y_pred))
+    return tf.reduce_mean(loss)
+model = tf.keras.models.load_model(model_filename, custom_objects={'weighted_bce': weighted_bce})
 
 # 3. Define the image preprocessing pipeline
 def preprocess_xray(img_path):
