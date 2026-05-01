@@ -1,1 +1,5 @@
 .idea
+.venv
+
+/POC/model/inference/__pycache__
+/POC/model/inference/xray_model_fine_tuning_poc.keras
