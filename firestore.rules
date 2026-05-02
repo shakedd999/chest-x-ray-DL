@@ -15,8 +15,7 @@ service cloud.firestore {
           && request.resource.data.probabilities is map
           && request.resource.data.predictions is list
           && request.resource.data.fileName is string
-          && request.resource.data.fileSize is number
-          && request.resource.data.imagePath is string;
+          && request.resource.data.fileSize is number;
 
         allow update: if request.auth != null
           && request.auth.uid == uid

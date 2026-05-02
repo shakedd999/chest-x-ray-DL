@@ -4,20 +4,12 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from 'firebase/storage';
-import { db, storage } from './firebase.js';
+import { db } from './firebase.js';
 import { MODEL_VERSION } from '../data/classes.js';
+import { resizeImageForFirestore } from './imageResize.js';
 
 function studyDocRef(uid, studyId) {
   return doc(db, 'users', uid, 'studies', studyId);
-}
-
-function imageStoragePath(uid, studyId, fileName) {
-  return `studies/${uid}/${studyId}/${fileName}`;
 }
 
 export function newStudyId() {
@@ -26,14 +18,13 @@ export function newStudyId() {
 }
 
 export async function createPendingStudy({ uid, studyId, file, patientMrn, reasonForExam }) {
-  const path = imageStoragePath(uid, studyId, file.name);
   await setDoc(studyDocRef(uid, studyId), {
     patientMrn: patientMrn || '',
     reasonForExam: reasonForExam || '',
     fileName: file.name,
     fileContentType: file.type || 'application/octet-stream',
     fileSize: file.size,
-    imagePath: path,
+    imageDataUrl: '',
     probabilities: {},
     predictions: [],
     modelVersion: MODEL_VERSION,
@@ -42,19 +33,15 @@ export async function createPendingStudy({ uid, studyId, file, patientMrn, reaso
     createdAt: serverTimestamp(),
     completedAt: null,
   });
-  return path;
 }
 
-export async function uploadStudyImage({ uid, studyId, file }) {
-  const path = imageStoragePath(uid, studyId, file.name);
-  const ref = storageRef(storage, path);
-  await uploadBytes(ref, file, { contentType: file.type || 'application/octet-stream' });
-  return path;
-}
-
-export async function getStudyImageUrl(imagePath) {
-  if (!imagePath) return null;
-  return getDownloadURL(storageRef(storage, imagePath));
+export async function attachStudyImage({ uid, studyId, file }) {
+  const { dataUrl, width, height } = await resizeImageForFirestore(file);
+  await updateDoc(studyDocRef(uid, studyId), {
+    imageDataUrl: dataUrl,
+    imageWidth: width,
+    imageHeight: height,
+  });
 }
 
 export async function completeStudy({ uid, studyId, probabilities, predictions }) {

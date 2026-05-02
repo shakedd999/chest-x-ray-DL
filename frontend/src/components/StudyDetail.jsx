@@ -300,7 +300,7 @@ export default function StudyDetail() {
         </div>
 
         <div className="xray-frame">
-          <XrayImage imagePath={study.imagePath} alt="Chest X-ray" invert={invert} zoom={zoom} />
+          <XrayImage dataUrl={study.imageDataUrl} alt="Chest X-ray" invert={invert} zoom={zoom} />
           <div className="viewer-corner" style={{ top: 8, left: 8 }}>R</div>
           <div className="viewer-corner" style={{ top: 8, right: 8 }}>L</div>
         </div>

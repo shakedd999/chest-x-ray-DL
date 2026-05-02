@@ -1,44 +1,14 @@
-import { useEffect, useState } from 'react';
-import { getStudyImageUrl } from '../lib/studies.js';
-
-export default function XrayImage({ imagePath, alt = 'Chest X-ray', invert = false, zoom = 1 }) {
-  const [url, setUrl] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let alive = true;
-    setUrl(null);
-    setError(null);
-    if (!imagePath) return;
-    getStudyImageUrl(imagePath)
-      .then((u) => {
-        if (alive) setUrl(u);
-      })
-      .catch((e) => {
-        if (alive) setError(e);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [imagePath]);
-
-  if (error) {
-    return (
-      <div style={{ color: 'var(--fg-2)', fontSize: 12, padding: 24, textAlign: 'center' }}>
-        Image unavailable
-      </div>
-    );
-  }
-  if (!url) {
+export default function XrayImage({ dataUrl, alt = 'Chest X-ray', invert = false, zoom = 1 }) {
+  if (!dataUrl) {
     return (
       <div style={{ color: 'var(--fg-3)', fontSize: 12, padding: 24, textAlign: 'center' }}>
-        Loading image…
+        Image unavailable
       </div>
     );
   }
   return (
     <img
-      src={url}
+      src={dataUrl}
       alt={alt}
       style={{
         display: 'block',
