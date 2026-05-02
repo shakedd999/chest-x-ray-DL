@@ -6,6 +6,19 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Pulmoscope",
+        "supportEmail": "ofekmerhav08@gmail.com",
+        "authorizedRedirectUris": [
+          "http://localhost:5173",
+          "https://chestxray-bde16.web.app",
+          "https://chestxray-bde16.firebaseapp.com"
+        ]
+      }
+    }
+  },
   "hosting": {
     "public": "frontend/dist",
     "ignore": [
