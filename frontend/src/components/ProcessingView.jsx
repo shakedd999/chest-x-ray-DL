@@ -26,7 +26,6 @@ export default function ProcessingView() {
     if (!file || !user || !studyId) return;
     startedRef.current = true;
 
-    let alive = true;
     completePipeline({
       uid: user.uid,
       studyId,
@@ -34,26 +33,19 @@ export default function ProcessingView() {
       patientMrn: mrn,
       reasonForExam: reason,
       onStage: (i) => {
-        if (!alive) return;
         setStageIdx(i);
         setPct(Math.min(95, 8 + (i / STAGES.length) * 85));
       },
     })
       .then(() => {
-        if (!alive) return;
         setPct(100);
         setStageIdx(STAGES.length);
         setTimeout(() => navigate(`/studies/${studyId}`, { replace: true }), 350);
       })
       .catch((err) => {
-        if (!alive) return;
         console.error('[processing] failed', err);
         setError(err?.message || 'Classification failed.');
       });
-
-    return () => {
-      alive = false;
-    };
   }, [file, user, studyId, mrn, reason, navigate]);
 
   if (!file) {
