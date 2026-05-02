@@ -4,3 +4,9 @@
 
 /POC/model/inference/__pycache__
 /POC/model/inference/xray_model_fine_tuning_poc.keras
+
+# frontend (Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
