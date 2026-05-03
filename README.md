@@ -11,7 +11,7 @@ Browser ──► Vite/React (frontend) ──► FastAPI (POC/model/inference) 
 - **Frontend:** Vite + React 18 + Firebase JS SDK (`frontend/`)
 - **Backend:** FastAPI + TensorFlow (`POC/model/inference/`)
 - **Storage:** Firestore document holds the resized JPEG preview + classifications (Spark plan; no Firebase Storage required)
-- **Auth:** Google Sign-In; the FastAPI `/get_prediction` endpoint verifies Firebase ID tokens server-side via PyJWT against Google's public JWKs — no service account, no gcloud login
+- **Auth:** Google Sign-In; the FastAPI `/get_prediction` endpoint verifies Firebase ID tokens server-side via PyJWT against Google's public JWKs — no server-side credentials required
 
 ---
 
@@ -101,13 +101,11 @@ VITE_FIREBASE_APP_ID=...
 VITE_INFERENCE_API_BASE=http://localhost:8000
 ```
 
-If the Firebase CLI is installed, the fastest copy-free path is:
+Optional: if you have the Firebase CLI installed (`npm i -g firebase-tools`), you can dump the same config without copy-pasting:
 
 ```bash
 firebase apps:sdkconfig --project chestxray-bde16 web <APP_ID>
 ```
-
-That's it — no gcloud, no service account.
 
 ---
 
