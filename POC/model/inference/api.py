@@ -7,13 +7,10 @@ Run locally with:
 Authentication:
     Requests to /get_prediction must include a Firebase ID token:
         Authorization: Bearer <token>
-    The token is verified server-side via firebase-admin. The frontend
-    obtains the token via auth.currentUser.getIdToken() after Google
-    Sign-In with the chestxray-bde16 project.
-
-For local dev, firebase-admin uses Application Default Credentials —
-run `gcloud auth application-default login` once. For deployed envs
-set GOOGLE_APPLICATION_CREDENTIALS to a service-account JSON.
+    The token's signature is verified against Google's public JWKs and
+    the audience/issuer claims are matched against EXPECTED_FIREBASE_PROJECT.
+    No service-account credentials or gcloud login required — the JWKs
+    are fetched over HTTPS from a public endpoint and cached in-process.
 """
 import logging
 import os
@@ -21,11 +18,10 @@ from contextlib import asynccontextmanager
 from io import BytesIO
 from typing import Dict, List
 
-import firebase_admin
+import jwt
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from firebase_admin import auth as firebase_auth
-from firebase_admin import credentials
+from jwt import PyJWKClient
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel
 
@@ -47,6 +43,14 @@ ALLOWED_ORIGINS = [
 
 # Firebase project this backend trusts. Frontend must sign in to the same project.
 EXPECTED_FIREBASE_PROJECT = os.environ.get("FIREBASE_PROJECT_ID", "chestxray-bde16")
+EXPECTED_ISSUER = f"https://securetoken.google.com/{EXPECTED_FIREBASE_PROJECT}"
+
+# Public JWK set Firebase signs ID tokens with. No auth needed to fetch.
+FIREBASE_JWKS_URL = (
+    "https://www.googleapis.com/service_accounts/v1/jwk/"
+    "securetoken@system.gserviceaccount.com"
+)
+_jwks_client = PyJWKClient(FIREBASE_JWKS_URL, cache_keys=True, lifespan=3600)
 
 logger = logging.getLogger(__name__)
 
@@ -56,29 +60,11 @@ class PredictionResponse(BaseModel):
     predictions: List[str]
 
 
-def _init_firebase_admin() -> None:
-    if firebase_admin._apps:  # already initialized
-        return
-    try:
-        # Application Default Credentials (gcloud auth application-default login,
-        # or GOOGLE_APPLICATION_CREDENTIALS service-account JSON in deployed envs).
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred, {"projectId": EXPECTED_FIREBASE_PROJECT})
-        logger.info("Firebase Admin initialized for project %s", EXPECTED_FIREBASE_PROJECT)
-    except Exception as exc:  # pragma: no cover
-        logger.warning(
-            "Firebase Admin init failed (%s). /get_prediction will reject every request "
-            "with 503 until credentials are available.",
-            exc,
-        )
-
-
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     logger.info("Loading model on startup")
     model_inference.download_and_load_the_model()
     logger.info("Model loaded")
-    _init_firebase_admin()
     yield
 
 
@@ -100,11 +86,6 @@ app.add_middleware(
 
 def verify_id_token(authorization: str = Header(default="")) -> str:
     """FastAPI dependency that returns the verified Firebase uid."""
-    if not firebase_admin._apps:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Auth not configured on the server. See README.",
-        )
     if not authorization.lower().startswith("bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -112,19 +93,30 @@ def verify_id_token(authorization: str = Header(default="")) -> str:
         )
     id_token = authorization.split(" ", 1)[1].strip()
     try:
-        decoded = firebase_auth.verify_id_token(id_token)
-    except firebase_auth.InvalidIdTokenError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
-    except firebase_auth.ExpiredIdTokenError:
+        signing_key = _jwks_client.get_signing_key_from_jwt(id_token).key
+        decoded = jwt.decode(
+            id_token,
+            signing_key,
+            algorithms=["RS256"],
+            audience=EXPECTED_FIREBASE_PROJECT,
+            issuer=EXPECTED_ISSUER,
+            options={"require": ["exp", "iat", "aud", "iss", "sub"]},
+        )
+    except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Expired token.")
-    except Exception as exc:  # pragma: no cover - defensive
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Auth failed: {exc}")
-    if decoded.get("aud") != EXPECTED_FIREBASE_PROJECT:
+    except jwt.InvalidAudienceError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token audience does not match this server's Firebase project.",
         )
-    return decoded["uid"]
+    except jwt.InvalidIssuerError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token issuer.")
+    except jwt.InvalidTokenError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+    uid = decoded.get("sub") or decoded.get("user_id")
+    if not uid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has no subject.")
+    return uid
 
 
 @app.get("/health")
@@ -132,7 +124,6 @@ def health() -> dict:
     return {
         "status": "ok",
         "model_loaded": model_inference.model is not None,
-        "auth_ready": bool(firebase_admin._apps),
     }
 
 
