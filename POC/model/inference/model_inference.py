@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List, TypedDict
 
 import tensorflow as tf
 import numpy as np
@@ -7,6 +7,11 @@ import gdown
 import os
 
 from POC.model.inference.trained_model_parameters import *
+
+
+class PredictionResult(TypedDict):
+    probabilities: Dict[str, float]
+    predictions: List[str]
 
 
 model = None
@@ -38,20 +43,27 @@ def preprocess_xray(image: Image.Image) -> np.ndarray:
     return np.expand_dims(img_array, axis=0)
 
 
-def get_prediction(image_path: str) -> List[str]:
+def get_prediction(image: Image.Image) -> PredictionResult:
     """
-    Predicts the chest disease of an image if exists.
-    :param image_path: Path to the image location.
-    :return: List of predictions or ['Normal'] if no disease has been found. The model_predictions can be of the
-             following types: 'Infiltration', 'Effusion' and 'Atelectasis'. There may be several predictions.
+    Predicts the chest disease of an in-memory image if exists.
+    :param image: A PIL Image object containing the chest X-ray to classify.
+    :return: A dict with two keys:
+             - 'probabilities': mapping of every class name ('Infiltration', 'Effusion', 'Atelectasis')
+               to its raw model probability.
+             - 'predictions': list of class names whose probability exceeded the per-class threshold,
+               or ['Normal'] if none did.
     """
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"The file '{image_path}' does not exist")
+    if model is None:
+        raise RuntimeError("Model is not loaded. Call download_and_load_the_model() first.")
 
-    img = Image.open(image_path)
-    processed_img = preprocess_xray(img)
+    processed_img = preprocess_xray(image)
 
     model_numerical_predictions = model.predict(processed_img)[0] # return the model predictions
+
+    probabilities = {
+        class_name: float(model_numerical_predictions[index])
+        for index, class_name in CLASSES.items()
+    }
 
     model_thresholds = np.array(THRESHOLDS_FOR_PREDICTIONS)
     result = list((model_numerical_predictions - model_thresholds > 0).astype(int))
@@ -59,7 +71,8 @@ def get_prediction(image_path: str) -> List[str]:
     model_predictions = [class_name for index, class_name in CLASSES.items() if result[index] == 1]
     if not model_predictions:
         model_predictions = ['Normal']
-    return model_predictions
+
+    return {"probabilities": probabilities, "predictions": model_predictions}
 
 
 if __name__ == "__main__":
@@ -68,19 +81,24 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     images_dir = os.path.normpath(os.path.join(current_dir, "..", "..", "test_xray_images"))
 
-    try:
-        xray_first_image_to_test_path = os.path.join(images_dir, "00000038_006-Atelectasis+Infiltration.png")
-        print(f"Image Name: '00000038_006-Atelectasis+Infiltration.png'  |  Model Predictions: "
-              f"{get_prediction(xray_first_image_to_test_path)}  |  Actual Labels: ['Atelectasis', 'Infiltration']")
+    test_cases = [
+        ("00000038_006-Atelectasis+Infiltration.png", ['Atelectasis', 'Infiltration']),
+        ("00000059_000-Normal.png", ['Normal']),
+        ("00000099_012-Effusion.png", ['Effusion']),
+    ]
 
-        xray_second_image_to_test_path = os.path.join(images_dir, "00000059_000-Normal.png")
-        print(f"Image Name: '00000059_000-Normal.png'  |  Model Predictions: "
-              f"{get_prediction(xray_second_image_to_test_path)}  |  Actual Labels: ['Normal']")
+    for file_name, actual_labels in test_cases:
+        image_path = os.path.join(images_dir, file_name)
+        if not os.path.exists(image_path):
+            print(f"Image '{file_name}' not found at {image_path}")
+            continue
 
-        xray_third_image_to_test_path = os.path.join(images_dir, "00000099_012-Effusion.png")
-        print(f"Image Name: '00000099_012-Effusion.png'  |  Model Predictions: "
-              f"{get_prediction(xray_third_image_to_test_path)}  |  Actual Labels: ['Effusion']")
-
-    except FileNotFoundError:
-        print("Prediction Probabilities not found. Please download the model first.")
+        with Image.open(image_path) as img:
+            result = get_prediction(img)
+        print(
+            f"Image Name: '{file_name}'  |  "
+            f"Probabilities: {result['probabilities']}  |  "
+            f"Model Predictions: {result['predictions']}  |  "
+            f"Actual Labels: {actual_labels}"
+        )
     print()
