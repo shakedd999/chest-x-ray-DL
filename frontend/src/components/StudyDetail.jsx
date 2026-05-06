@@ -141,13 +141,15 @@ export default function StudyDetail() {
             {negative ? 'Normal' : top.label}
           </div>
         </div>
-        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <div className="prob-summary-num">
-            {(top.p * 100).toFixed(1)}
-            <span style={{ fontSize: 14, color: 'var(--fg-2)' }}>%</span>
+        {!negative && (
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <div className="prob-summary-num">
+              {(top.p * 100).toFixed(1)}
+              <span style={{ fontSize: 14, color: 'var(--fg-2)' }}>%</span>
+            </div>
+            <div className="prob-summary-meta">probability</div>
           </div>
-          <div className="prob-summary-meta">probability</div>
-        </div>
+        )}
       </div>
 
       <div className="uppercase-label" style={{ marginBottom: 6, paddingLeft: 6 }}>
