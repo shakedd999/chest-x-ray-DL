@@ -12,3 +12,6 @@ frontend/.env.local
 frontend/.env.*.local
 
 .DS_Store
+
+# rendered from WORK_SUMMARY.md — regenerate rather than commit
+WORK_SUMMARY.pdf
