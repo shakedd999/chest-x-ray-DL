@@ -15,13 +15,6 @@ class PredictionResult(TypedDict):
 
 
 model = None
-pos_weights_tf = tf.constant(POSITIVE_WEIGHTS_SQRT, dtype=tf.float32)
-
-
-def weighted_bce(y_true, y_pred):
-    y_pred = tf.clip_by_value(y_pred, EPSILON, 1.0 - EPSILON)
-    loss = -(pos_weights_tf * y_true * tf.math.log(y_pred) + (1.0 - y_true) * tf.math.log(1.0 - y_pred))
-    return tf.reduce_mean(loss)
 
 
 def download_and_load_the_model():
@@ -31,10 +24,8 @@ def download_and_load_the_model():
     if not os.path.exists(MODEL_FILE_NAME):
         gdown.download(url, MODEL_FILE_NAME, quiet=False)
 
-    model = tf.keras.models.load_model(
-        MODEL_FILE_NAME,
-        custom_objects={'weighted_bce': weighted_bce}
-    )
+    # compile=False skips the training-only custom loss; we only run predict()
+    model = tf.keras.models.load_model(MODEL_FILE_NAME, compile=False)
 
 
 def preprocess_xray(image: Image.Image) -> np.ndarray:
@@ -48,7 +39,7 @@ def get_prediction(image: Image.Image) -> PredictionResult:
     Predicts the chest disease of an in-memory image if exists.
     :param image: A PIL Image object containing the chest X-ray to classify.
     :return: A dict with two keys:
-             - 'probabilities': mapping of every class name ('Infiltration', 'Effusion', 'Atelectasis')
+             - 'probabilities': mapping of every class name in CLASSES
                to its raw model probability.
              - 'predictions': list of class names whose probability exceeded the per-class threshold,
                or ['Normal'] if none did.
