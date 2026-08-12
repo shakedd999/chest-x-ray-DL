@@ -3,19 +3,19 @@
 // 13 classes: NIH ChestX-ray14 minus Hernia, alphabetical (= model output order).
 
 export const PATHOLOGY_CLASSES = [
-  { key: 'Atelectasis', label: 'Atelectasis', threshold: 0.37 },
-  { key: 'Cardiomegaly', label: 'Cardiomegaly', threshold: 0.42 },
-  { key: 'Consolidation', label: 'Consolidation', threshold: 0.29 },
-  { key: 'Edema', label: 'Edema', threshold: 0.46 },
-  { key: 'Effusion', label: 'Effusion', threshold: 0.4 },
-  { key: 'Emphysema', label: 'Emphysema', threshold: 0.53 },
-  { key: 'Fibrosis', label: 'Fibrosis', threshold: 0.3 },
-  { key: 'Infiltration', label: 'Infiltration', threshold: 0.32 },
+  { key: 'Atelectasis', label: 'Atelectasis', threshold: 0.34 },
+  { key: 'Cardiomegaly', label: 'Cardiomegaly', threshold: 0.48 },
+  { key: 'Consolidation', label: 'Consolidation', threshold: 0.25 },
+  { key: 'Edema', label: 'Edema', threshold: 0.42 },
+  { key: 'Effusion', label: 'Effusion', threshold: 0.51 },
+  { key: 'Emphysema', label: 'Emphysema', threshold: 0.52 },
+  { key: 'Fibrosis', label: 'Fibrosis', threshold: 0.26 },
+  { key: 'Infiltration', label: 'Infiltration', threshold: 0.31 },
   { key: 'Mass', label: 'Mass', threshold: 0.32 },
-  { key: 'Nodule', label: 'Nodule', threshold: 0.27 },
-  { key: 'Pleural_Thickening', label: 'Pleural thickening', threshold: 0.31 },
-  { key: 'Pneumonia', label: 'Pneumonia', threshold: 0.25 },
-  { key: 'Pneumothorax', label: 'Pneumothorax', threshold: 0.49 },
+  { key: 'Nodule', label: 'Nodule', threshold: 0.26 },
+  { key: 'Pleural_Thickening', label: 'Pleural thickening', threshold: 0.39 },
+  { key: 'Pneumonia', label: 'Pneumonia', threshold: 0.17 },
+  { key: 'Pneumothorax', label: 'Pneumothorax', threshold: 0.47 },
 ];
 
 export const NORMAL_LABEL = 'Normal';

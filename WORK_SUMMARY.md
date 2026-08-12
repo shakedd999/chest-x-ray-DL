@@ -80,11 +80,14 @@ history.
 - **Image previews are stored inline with the study**, not in a
   separate storage bucket. This keeps the project on the free tier;
   the full original is only sent to the model, never kept.
-- **Decision thresholds are applied at display time, not baked into
-  saved studies.** Re-tuning thresholds later automatically updates
-  every historical study. This matters right now: the current 13-class
-  thresholds are provisional and still need tuning against a validation
-  set for this model.
+- **Each class has its own decision threshold**, picked by maximising
+  validation F1 for that class rather than using a shared 0.5 cutoff.
+  The classes are very unevenly represented, so one global cutoff would
+  bury the rare findings.
+- **The positive/negative verdict is decided by the backend and stored
+  with the study.** Probabilities are stored too, so re-tuning a
+  threshold changes how new studies are judged but leaves the verdict
+  on existing ones untouched — those need a backfill pass to catch up.
 - **No server-side credentials.** Token verification uses Google's
   public keys; the backend can run anywhere with no secrets.
 - **Strictly per-user.** No admin views, no cross-user sharing — the
