@@ -5,6 +5,7 @@ import XrayImage from './XrayImage.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { useStudy } from '../hooks/useStudy.js';
 import {
+  PATHOLOGY_CLASSES,
   isNegative,
   levelFor,
   priorityFor,
@@ -185,7 +186,7 @@ export default function StudyDetail() {
           fontFamily: 'var(--font-mono)',
         }}
       >
-        Thresholds — Atelectasis 0.34 · Effusion 0.44 · Infiltration 0.29
+        Thresholds — {PATHOLOGY_CLASSES.map((c) => `${c.label} ${c.threshold}`).join(' · ')}
       </div>
     </div>
   );
@@ -219,8 +220,8 @@ export default function StudyDetail() {
         <div className="report-text">
           {negative ? (
             <span>
-              No findings above threshold for the supported pathologies (Atelectasis, Effusion, Infiltration).
-              Heart size and mediastinal contours not assessed by this model — review the image directly.
+              No findings above threshold for the {PATHOLOGY_CLASSES.length} supported pathologies.
+              Findings outside this class set are not assessed by this model — review the image directly.
             </span>
           ) : findingsAboveThreshold.length === 0 ? (
             <span>
@@ -281,7 +282,7 @@ export default function StudyDetail() {
 
       <div className="disclaimer">
         AI-generated draft. The interpreting radiologist is responsible for the final report. This model
-        only classifies for Atelectasis, Effusion, and Infiltration — other pathologies are not assessed.
+        only classifies for the {PATHOLOGY_CLASSES.length} supported pathology classes — other findings are not assessed.
       </div>
     </div>
   );

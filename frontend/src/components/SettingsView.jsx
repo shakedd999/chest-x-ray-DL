@@ -1,5 +1,6 @@
 import Icon from './Icon.jsx';
 import { initialsFor, signOut } from '../lib/auth.js';
+import { PATHOLOGY_CLASSES } from '../data/classes.js';
 
 export default function SettingsView({ user }) {
   return (
@@ -50,7 +51,8 @@ export default function SettingsView({ user }) {
             <div>
               <div className="lbl">Active model</div>
               <div className="desc">
-                Inference is served by the project's FastAPI endpoint. Class set: Atelectasis, Effusion, Infiltration.
+                Inference is served by the project's FastAPI endpoint. Class set:{' '}
+                {PATHOLOGY_CLASSES.map((c) => c.label).join(', ')}.
               </div>
             </div>
             <span className="chip">pulmoscope-cxr-v1.0</span>

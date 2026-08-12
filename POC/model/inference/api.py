@@ -70,8 +70,8 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Chest X-Ray Classifier API",
-    description="Classifies chest X-ray images for Infiltration, Effusion, and Atelectasis.",
-    version="1.0.0",
+    description="Classifies chest X-ray images across 13 thoracic pathology classes (NIH ChestX-ray14 minus Hernia).",
+    version="2.0.0",
     lifespan=lifespan,
 )
 

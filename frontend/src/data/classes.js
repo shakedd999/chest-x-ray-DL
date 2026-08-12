@@ -1,16 +1,25 @@
-// Mirrors POC/model/inference/trained_model_parameters.py:
-//   CLASSES = {0: 'Infiltration', 1: 'Effusion', 2: 'Atelectasis'}
-//   THRESHOLDS_FOR_PREDICTIONS = [0.29, 0.44, 0.34]
-// Update both places when retraining.
+// Mirrors POC/model/inference/trained_model_parameters.py
+// (CLASSES + THRESHOLDS_FOR_PREDICTIONS). Update both places when retraining.
+// 13 classes: NIH ChestX-ray14 minus Hernia, alphabetical (= model output order).
 
 export const PATHOLOGY_CLASSES = [
-  { key: 'Infiltration', label: 'Infiltration', threshold: 0.29 },
-  { key: 'Effusion', label: 'Effusion', threshold: 0.44 },
-  { key: 'Atelectasis', label: 'Atelectasis', threshold: 0.34 },
+  { key: 'Atelectasis', label: 'Atelectasis', threshold: 0.37 },
+  { key: 'Cardiomegaly', label: 'Cardiomegaly', threshold: 0.42 },
+  { key: 'Consolidation', label: 'Consolidation', threshold: 0.29 },
+  { key: 'Edema', label: 'Edema', threshold: 0.46 },
+  { key: 'Effusion', label: 'Effusion', threshold: 0.4 },
+  { key: 'Emphysema', label: 'Emphysema', threshold: 0.53 },
+  { key: 'Fibrosis', label: 'Fibrosis', threshold: 0.3 },
+  { key: 'Infiltration', label: 'Infiltration', threshold: 0.32 },
+  { key: 'Mass', label: 'Mass', threshold: 0.32 },
+  { key: 'Nodule', label: 'Nodule', threshold: 0.27 },
+  { key: 'Pleural_Thickening', label: 'Pleural thickening', threshold: 0.31 },
+  { key: 'Pneumonia', label: 'Pneumonia', threshold: 0.25 },
+  { key: 'Pneumothorax', label: 'Pneumothorax', threshold: 0.49 },
 ];
 
 export const NORMAL_LABEL = 'Normal';
-export const MODEL_VERSION = 'pulmoscope-cxr-v1.0';
+export const MODEL_VERSION = 'pulmoscope-cxr-v2.0';
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // matches POC/model/inference/api.py
 

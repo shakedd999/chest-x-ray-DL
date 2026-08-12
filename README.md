@@ -1,6 +1,6 @@
 # Pulmoscope — Chest X-Ray Classification
 
-A doctor-facing web app that classifies chest X-rays for **Atelectasis**, **Effusion**, and **Infiltration**, with a per-user history of past studies.
+A doctor-facing web app that classifies chest X-rays across **13 thoracic pathology classes** (NIH ChestX-ray14 minus Hernia: Atelectasis, Cardiomegaly, Consolidation, Edema, Effusion, Emphysema, Fibrosis, Infiltration, Mass, Nodule, Pleural Thickening, Pneumonia, Pneumothorax), with a per-user history of past studies.
 
 ```
 Browser ──► Vite/React (frontend) ──► FastAPI (POC/model/inference) ──► TF model
@@ -64,7 +64,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Installs FastAPI, TensorFlow, PyJWT, etc. The model weights (`xray_model_fine_tuning_poc.keras`, ~48 MB) download automatically from Google Drive on the first inference request.
+Installs FastAPI, TensorFlow, PyJWT, etc. The model weights (`xray_model_fine_tuning_project_final_result.keras`, ~48 MB) download automatically from Google Drive on backend startup if the file isn't already at the repo root.
 
 ### 3. Frontend — Node dependencies
 
@@ -210,7 +210,7 @@ chest-x-ray-DL/
 │       ├── hooks/                           useAuth, useStudies, useStudy
 │       ├── lib/                             firebase, auth, studies,
 │       │                                    inferenceApi, imageResize
-│       └── data/                            classes.js (3 pathologies + thresholds)
+│       └── data/                            classes.js (13 pathologies + thresholds)
 ├── firebase.json                            Firestore + auth + hosting blocks
 ├── firestore.rules                          Per-user /users/{uid}/studies/{studyId}
 ├── firestore.indexes.json
@@ -228,8 +228,8 @@ chest-x-ray-DL/
   patientMrn, reasonForExam,
   fileName, fileContentType, fileSize,
   imageDataUrl, imageWidth, imageHeight,   resized JPEG (≤ ~700 KB base64)
-  probabilities { Atelectasis, Effusion, Infiltration },
-  predictions: ['Atelectasis' | 'Effusion' | 'Infiltration' | 'Normal'],
+  probabilities { one key per pathology class — see frontend/src/data/classes.js },
+  predictions: ['<class name>' ... | 'Normal'],
   modelVersion,
   status: 'pending' | 'complete' | 'failed',
   errorMessage,
