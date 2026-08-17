@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chest X-Ray Presentation</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    #unmute {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 18px;
+      font: 500 14px/1 -apple-system, BlinkMacSystemFont, Helvetica, sans-serif;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    #unmute:hover { background: rgba(0, 0, 0, 0.75); }
+    #unmute[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <video id="pres"
+         src="file:///Users/ofekmerhav/Downloads/chest_x_ray_pres.mp4"
+         autoplay loop muted playsinline></video>
+  <button id="unmute">Unmute</button>
+  <script>
+    const video = document.getElementById('pres');
+    const button = document.getElementById('unmute');
+
+    button.addEventListener('click', () => {
+      video.muted = false;
+      video.volume = 1;
+      video.play();
+      button.hidden = true;
+    });
+  </script>
+</body>
+</html>
