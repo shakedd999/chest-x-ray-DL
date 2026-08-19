@@ -2,7 +2,7 @@
 .venv
 .worktrees/
 
-/POC/model/inference/__pycache__
+/backend/model/inference/__pycache__
 *.keras
 
 # frontend (Vite)

@@ -2,7 +2,7 @@
 HTTP API for the chest X-ray classifier.
 
 Run locally with:
-    uvicorn POC.model.inference.api:app --host 127.0.0.1 --port 8000
+    uvicorn backend.model.inference.api:app --host 127.0.0.1 --port 8000
 
 Authentication:
     Requests to /get_prediction must include a Firebase ID token:
@@ -25,7 +25,7 @@ from jwt import PyJWKClient
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel
 
-from POC.model.inference import model_inference
+from backend.model.inference import model_inference
 
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB

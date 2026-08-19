@@ -6,7 +6,7 @@ from PIL import Image
 import gdown
 import os
 
-from POC.model.inference.trained_model_parameters import *
+from backend.model.inference.trained_model_parameters import *
 
 
 class PredictionResult(TypedDict):

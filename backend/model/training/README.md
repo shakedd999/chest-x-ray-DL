@@ -1,6 +1,6 @@
-# X-Ray POC: Training results
+# X-Ray Model Training Results
 
-This notebook file ***'X_RAY_POC.ipynb'*** contains the data building and the model training for the X-Ray Proof of Concept (POC) project.
+This notebook file ***'xray_model_training.ipynb'*** contains the data building and the model training for the X-Ray classification project.
 
 ---
 
@@ -20,7 +20,7 @@ Use the next thresholds in order to know whether the image contains a chest dise
 
 ## Training & Dataset Details
 
-The model in the POC was trained on a filtered subset of the NIH Chest X-ray dataset, specifically targeting high-relevance clinical findings.
+The model was trained on a filtered subset of the NIH Chest X-ray dataset, specifically targeting high-relevance clinical findings.
 
 ### Dataset Distribution
 The data was split using a **GroupShuffleSplit** based on **Patient ID** to ensure images from the same patient were not shared between training and testing sets.
@@ -50,7 +50,7 @@ Before passing an image to the model for a prediction, apply the same preprocess
 ---
 
 ## Quick Start Inference For The Model
-To run the inference or reproduce the results from the `X_RAY_POC.ipynb` notebook outside of the original Google Colab environment, you need to install the following dependencies.
+To run the inference or reproduce the results from the `xray_model_training.ipynb` notebook outside of the original Google Colab environment, you need to install the following dependencies.
 
 Run the following command in your terminal to install all necessary libraries:
 
@@ -110,7 +110,7 @@ if os.path.exists(test_image_path):
     processed_img = preprocess_xray(test_image_path)
     predictions = model.predict(processed_img)
 
-    # The model predictions (The possible predictions in the POC are: ['Infiltration', 'Effusion', 'Atelectasis'])
+    # The model predictions (The possible predictions are: ['Infiltration', 'Effusion', 'Atelectasis'])
     print(f"Prediction Probabilities: {predictions}")
 else:
     print(f"Error: The file '{test_image_path}' was not found.")

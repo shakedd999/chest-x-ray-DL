@@ -3,13 +3,13 @@
 A doctor-facing web app that classifies chest X-rays across **13 thoracic pathology classes** (NIH ChestX-ray14 minus Hernia: Atelectasis, Cardiomegaly, Consolidation, Edema, Effusion, Emphysema, Fibrosis, Infiltration, Mass, Nodule, Pleural Thickening, Pneumonia, Pneumothorax), with a per-user history of past studies.
 
 ```
-Browser ──► Vite/React (frontend) ──► FastAPI (POC/model/inference) ──► TF model
+Browser ──► Vite/React (frontend) ──► FastAPI (backend/model/inference) ──► TF model
                 │
                 └─► Firebase Auth (Google SSO) + Firestore (per-user studies + image preview)
 ```
 
 - **Frontend:** Vite + React 18 + Firebase JS SDK (`frontend/`)
-- **Backend:** FastAPI + TensorFlow (`POC/model/inference/`)
+- **Backend:** FastAPI + TensorFlow (`backend/model/inference/`)
 - **Storage:** Firestore document holds the resized JPEG preview + classifications (Spark plan; no Firebase Storage required)
 - **Auth:** Google Sign-In; the FastAPI `/get_prediction` endpoint verifies Firebase ID tokens server-side via PyJWT against Google's public JWKs — no server-side credentials required
 
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 # terminal 1 — backend
 source .venv/bin/activate
-uvicorn POC.model.inference.api:app --host 127.0.0.1 --port 8000
+uvicorn backend.model.inference.api:app --host 127.0.0.1 --port 8000
 
 # terminal 2 — frontend
 cd frontend && npm run dev
@@ -117,7 +117,7 @@ You'll need **two terminals**.
 
 ```bash
 source .venv/bin/activate
-uvicorn POC.model.inference.api:app --host 127.0.0.1 --port 8000
+uvicorn backend.model.inference.api:app --host 127.0.0.1 --port 8000
 ```
 
 First start downloads the model (~5–10 s) and prints `Application startup complete`.
@@ -127,7 +127,7 @@ curl http://127.0.0.1:8000/health
 # → {"status":"ok","model_loaded":true}
 
 curl -X POST http://127.0.0.1:8000/get_prediction \
-  -F "file=@POC/test_xray_images/00000059_000-Normal.png"
+  -F "file=@backend/test_xray_images/00000059_000-Normal.png"
 # → HTTP 401  {"detail":"Missing or malformed Authorization header."}
 ```
 
@@ -147,7 +147,7 @@ Open the URL Vite prints. The CORS allowlist on the backend covers ports `5173`�
 ## End-to-end smoke test
 
 1. Open the Vite URL and click **Continue with Google** — Google popup, then you land on the empty worklist.
-2. Click **+ New** (top-right or bottom tab on mobile) → drop a PNG (e.g. `POC/test_xray_images/00000059_000-Normal.png`) → submit.
+2. Click **+ New** (top-right or bottom tab on mobile) → drop a PNG (e.g. `backend/test_xray_images/00000059_000-Normal.png`) → submit.
 3. Watch the four stages tick through: *Saving study → Storing image preview → Running classifier → Persisting results*.
 4. The app auto-navigates to **/studies/{id}** with the X-ray, ranked probabilities, and the AI draft report.
 5. Refresh the page — studies persist (loaded from Firestore on every mount).
@@ -178,7 +178,7 @@ is a public document.
 To trust a different Firebase project, set `FIREBASE_PROJECT_ID` in the backend's environment:
 
 ```bash
-FIREBASE_PROJECT_ID=my-other-project uvicorn POC.model.inference.api:app ...
+FIREBASE_PROJECT_ID=my-other-project uvicorn backend.model.inference.api:app ...
 ```
 
 ---
@@ -187,7 +187,7 @@ FIREBASE_PROJECT_ID=my-other-project uvicorn POC.model.inference.api:app ...
 
 ```
 chest-x-ray-DL/
-├── POC/
+├── backend/
 │   ├── model/
 │   │   ├── inference/
 │   │   │   ├── api.py                       FastAPI app — /health, /get_prediction
@@ -247,7 +247,7 @@ chest-x-ray-DL/
 | `auth/unauthorized-domain` on sign-in | `localhost` missing from Firebase Auth authorized domains | Console → Authentication → Settings → Authorized domains → add `localhost` |
 | `401 Missing or malformed Authorization header` from `/get_prediction` | Frontend isn't sending a Firebase ID token, or it expired | Check `auth.currentUser` exists; tokens auto-refresh, but you can force with `getIdToken(true)` |
 | `401 Invalid token issuer` / `Token audience does not match` | Frontend is signed in to a different Firebase project than the backend trusts | Confirm `VITE_FIREBASE_PROJECT_ID` (frontend) and `FIREBASE_PROJECT_ID` env (backend, defaults to `chestxray-bde16`) match |
-| CORS error in browser console | Vite is on a port outside 5173–5175 | Free up port 5173, or extend `ALLOWED_ORIGINS` in `POC/model/inference/api.py` |
+| CORS error in browser console | Vite is on a port outside 5173–5175 | Free up port 5173, or extend `ALLOWED_ORIGINS` in `backend/model/inference/api.py` |
 | `Permission denied` on a Firestore write | Doc shape doesn't match the rules | See `firestore.rules` — `create` requires `status: 'pending'` and the field types listed there |
 | Processing screen stuck at first stage | Stale dev build | Hard-refresh the browser; HMR sometimes drops state |
 | Image bigger than 10 MB rejected | Server-side cap | Resize before uploading; the frontend already pre-flights this |

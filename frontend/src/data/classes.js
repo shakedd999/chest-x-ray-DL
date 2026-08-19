@@ -1,4 +1,4 @@
-// Mirrors POC/model/inference/trained_model_parameters.py
+// Mirrors backend/model/inference/trained_model_parameters.py
 // (CLASSES + THRESHOLDS_FOR_PREDICTIONS). Update both places when retraining.
 // 13 classes: NIH ChestX-ray14 minus Hernia, alphabetical (= model output order).
 
@@ -21,7 +21,7 @@ export const PATHOLOGY_CLASSES = [
 export const NORMAL_LABEL = 'Normal';
 export const MODEL_VERSION = 'pulmoscope-cxr-v2.0';
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // matches POC/model/inference/api.py
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // matches backend/model/inference/api.py
 
 export function rankedProbabilities(probabilities = {}) {
   return PATHOLOGY_CLASSES

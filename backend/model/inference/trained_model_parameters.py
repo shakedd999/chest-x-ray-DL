@@ -21,6 +21,6 @@ CLASSES = {
 
 # Per-class decision thresholds, same order as CLASSES. Each is the cutoff that
 # maximised validation F1 for that class, taken from the threshold-tuning cell of
-# POC/model/training/X_RAY_POC.ipynb. Re-tune and update both here and
+# backend/model/training/xray_model_training.ipynb. Re-tune and update both here and
 # frontend/src/data/classes.js whenever the model is retrained.
 THRESHOLDS_FOR_PREDICTIONS = [0.34, 0.48, 0.25, 0.42, 0.51, 0.52, 0.26, 0.31, 0.32, 0.26, 0.39, 0.17, 0.47]
