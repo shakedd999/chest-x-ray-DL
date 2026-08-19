@@ -38,7 +38,7 @@ export default function AuthScreen() {
           </div>
           <div style={{ display: 'flex', gap: 24, marginTop: 32, fontSize: 12, color: 'var(--fg-2)' }}>
             <div>
-              <div className="mono" style={{ fontSize: 22, color: 'var(--fg-0)', letterSpacing: '-0.02em' }}>3</div>
+              <div className="mono" style={{ fontSize: 22, color: 'var(--fg-0)', letterSpacing: '-0.02em' }}>13</div>
               <div className="uppercase-label" style={{ marginTop: 2 }}>pathology classes</div>
             </div>
             <div>
