@@ -1,0 +1,15 @@
+.git
+.venv
+.worktrees
+.claude
+node_modules
+frontend
+backend/model/training
+backend/test_xray_images
+*.keras
+*.pyc
+__pycache__
+.DS_Store
+*.md
+WORK_SUMMARY.pdf
+loop_x_ray_pres.html

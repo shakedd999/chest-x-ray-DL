@@ -19,7 +19,7 @@ from io import BytesIO
 from typing import Dict, List
 
 import jwt
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, FastAPI, File, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from jwt import PyJWKClient
 from PIL import Image, UnidentifiedImageError
@@ -31,7 +31,7 @@ from backend.model.inference import model_inference
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 ALLOWED_CONTENT_TYPE_PREFIX = "image/"
 
-# Explicit allowlist; never wildcard. Add deployed Hosting origin once it exists.
+# Explicit allowlist; never wildcard.
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -39,6 +39,8 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5174",
     "http://localhost:5175",
     "http://127.0.0.1:5175",
+    "https://chestxray-bde16.web.app",
+    "https://chestxray-bde16.firebaseapp.com",
 ]
 
 # Firebase project this backend trusts. Frontend must sign in to the same project.
@@ -119,7 +121,10 @@ def verify_id_token(authorization: str = Header(default="")) -> str:
     return uid
 
 
-@app.get("/health")
+router = APIRouter()
+
+
+@router.get("/health")
 def health() -> dict:
     return {
         "status": "ok",
@@ -127,7 +132,7 @@ def health() -> dict:
     }
 
 
-@app.post(
+@router.post(
     "/get_prediction",
     response_model=PredictionResponse,
     summary="Classify a chest X-ray image",
@@ -166,3 +171,10 @@ async def get_prediction(
 
     logger.info("inference uid=%s file=%s bytes=%d", uid, file.filename, len(contents))
     return PredictionResponse(**result)
+
+
+# Bare routes for local dev / direct calls to the Cloud Run URL; "/api"-prefixed
+# routes because Firebase Hosting's rewrite to Cloud Run forwards the full
+# incoming path (it does not strip the "/api" prefix matched by the rewrite).
+app.include_router(router)
+app.include_router(router, prefix="/api")

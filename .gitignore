@@ -11,6 +11,9 @@ frontend/dist/
 frontend/.env.local
 frontend/.env.*.local
 
+# Firebase CLI local deploy cache
+.firebase/
+
 .DS_Store
 
 # rendered from WORK_SUMMARY.md — regenerate rather than commit
